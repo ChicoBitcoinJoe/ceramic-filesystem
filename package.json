@@ -1,21 +1,22 @@
 {
   "name": "@cbj/ceramic-filesystem",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "A filesystem using ceramic",
   "author": "Joseph Reed",
   "license": "MIT",
   "main": "./dist/index.js",
   "typings": "./dist/index.d.ts",
+  "type": "module",
   "scripts": {
     "ceramic": "ceramic daemon",
     "generateSeed": "npx ts-node ./generateSeed.ts",
     "bootstrap": "npx ts-node ./bootstrap.ts",
     "build": "tsc && cp ./src/model.json ./dist",
-    "test": "tsc && cp ./src/model.json ./dist && jest",
-    "postinstall": "tsc && cp ./src/model.json ./dist"
+    "test": "npm run build && jest",
+    "postinstall": "npm run build"
   },
   "dependencies": {
-    "@cbj/ceramic-append-collection": "^0.1.15"
+    "@cbj/ceramic-append-collection": "^0.1.16"
   },
   "devDependencies": {
     "@ceramicnetwork/cli": "^1.3.1",
@@ -33,5 +34,16 @@
     "ts-jest": "^26.5.6",
     "ts-node": "^10.2.1",
     "typescript": "^4.3.5"
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ChicoBitcoinJoe/ceramic-filesystem.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ChicoBitcoinJoe/ceramic-filesystem/issues"
+  },
+  "homepage": "https://github.com/ChicoBitcoinJoe/ceramic-filesystem#readme"
 }
