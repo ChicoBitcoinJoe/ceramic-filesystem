@@ -1,10 +1,11 @@
 {
   "name": "@cbj/ceramic-filesystem",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A filesystem using ceramic",
   "author": "Joseph Reed",
   "license": "MIT",
   "main": "./dist/index.js",
+  "typings": "./dist/index.d.ts",
   "scripts": {
     "ceramic": "ceramic daemon",
     "generateSeed": "npx ts-node ./generateSeed.ts",
@@ -14,7 +15,7 @@
     "postinstall": "tsc && cp ./src/model.json ./dist"
   },
   "dependencies": {
-    "@cbj/ceramic-append-collection": "^0.1.14"
+    "@cbj/ceramic-append-collection": "^0.1.15"
   },
   "devDependencies": {
     "@ceramicnetwork/cli": "^1.3.1",
