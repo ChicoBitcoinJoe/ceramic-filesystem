@@ -1,22 +1,20 @@
 {
   "name": "@cbj/ceramic-filesystem",
-  "version": "0.1.3",
+  "version": "0.1.17",
   "description": "A filesystem using ceramic",
   "author": "Joseph Reed",
   "license": "MIT",
-  "main": "./dist/index.js",
-  "typings": "./dist/index.d.ts",
-  "type": "module",
+  "main": "dist/index",
   "scripts": {
     "ceramic": "ceramic daemon",
     "generateSeed": "npx ts-node ./generateSeed.ts",
     "bootstrap": "npx ts-node ./bootstrap.ts",
-    "build": "tsc && cp ./src/model.json ./dist",
-    "test": "npm run build && jest",
+    "build": "tsc && cp src/index.ts dist",
+    "test": "jest",
     "postinstall": "npm run build"
   },
   "dependencies": {
-    "@cbj/ceramic-append-collection": "^0.1.16"
+    "@cbj/ceramic-append-collection": "^0.1.17"
   },
   "devDependencies": {
     "@ceramicnetwork/cli": "^1.3.1",
@@ -34,9 +32,6 @@
     "ts-jest": "^26.5.6",
     "ts-node": "^10.2.1",
     "typescript": "^4.3.5"
-  },
-  "directories": {
-    "test": "test"
   },
   "repository": {
     "type": "git",
