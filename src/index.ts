@@ -145,24 +145,25 @@ const parsePath = (path: string) => {
   return [ name, parentPath, getTypeFromPath(path) ]
 }
 
-const getMetadata = (path: string): TileMetadataArgs => {
+const getMetadata = (controller: string, path: string): TileMetadataArgs => {
   return {
+    controllers: [controller],
     tags: [path],
     deterministic: true,
     // schema: type === 'Folder' ? schema.folder : schema.file
   }
 }
 
-const getStreamIdFromPath = async (ceramic: any, path: string): Promise<string | undefined> => {
+const getStreamIdFromPath = async (ceramic: any, did: string, path: string): Promise<string | undefined> => {
   if(!validPath(path)) return undefined
 
-  const metadata: TileMetadataArgs = getMetadata(path)
+  const metadata: TileMetadataArgs = getMetadata(did, path)
   let stream: any = await TileDocument.create(ceramic, null, metadata, { anchor: false, publish: false })
   return stream.id.toString()
  }
 
-const exists = async (ceramic:any, path: string): Promise<TileDocument | false> => {
-  const streamId = await getStreamIdFromPath(ceramic, path)
+const exists = async (ceramic:any, did: string, path: string): Promise<TileDocument | false> => {
+  const streamId = await getStreamIdFromPath(ceramic, did, path)
   if(!streamId) return false
   
   const stream: TileDocument = await TileDocument.load(ceramic, streamId)
@@ -176,7 +177,7 @@ const exists = async (ceramic:any, path: string): Promise<TileDocument | false> 
 }
 
 const create = async (ceramic: any, path: string, options: CreateOptions): Promise<TileDocument> => {
-  let metadata: TileMetadataArgs = getMetadata(path)
+  let metadata: TileMetadataArgs = getMetadata(ceramic.did.id.toString(), path)
   let stream: TileDocument = await TileDocument.create<Record<string, any>>(ceramic, null, metadata, { anchor: !options?.temporary, publish: !options?.temporary })
   let content: any = null
   let [ name, parentPath, type ] = parsePath(path)
@@ -198,7 +199,7 @@ const create = async (ceramic: any, path: string, options: CreateOptions): Promi
 
   if(!options?.hidden) {
     if(parentPath) {
-      const parent = await openPath(ceramic, parentPath, options) as Folder
+      const parent = await openPath(ceramic, stream.metadata.controllers[0], parentPath, options) as Folder
       if(type === "Folder"){
         await parent.folders.insert(name)
       }
@@ -224,11 +225,11 @@ const getF = async (ceramic: any, stream: TileDocument): Promise<Folder | File |
   }
 
   if(type === 'Folder') {
-    const folders: Collection = await AppendCollection.load(ceramic, stream.content.folderCollectionId)  
-    const files: Collection = await AppendCollection.load(ceramic, stream.content.fileCollectionId)  
+    const folders: any = await AppendCollection.load(ceramic, stream.content.folderCollectionId)
+    const files: any = await AppendCollection.load(ceramic, stream.content.fileCollectionId)
   
     const open = async (path: string, options: CreateOptions): Promise<Folder | File | undefined> => {
-      return openPath(ceramic, fullPath + '/' + path, options)
+      return openPath(ceramic, stream.metadata.controllers[0], fullPath + '/' + path, options)
     }
 
     const folder: Folder = { 
@@ -241,7 +242,7 @@ const getF = async (ceramic: any, stream: TileDocument): Promise<Folder | File |
     return folder
   }
   else {
-    const history: Collection = await AppendCollection.load(ceramic, stream.content.historyCollectionId)  
+    const history: any = await AppendCollection.load(ceramic, stream.content.historyCollectionId)  
     
     const file: File = {
       ...f,
@@ -251,11 +252,11 @@ const getF = async (ceramic: any, stream: TileDocument): Promise<Folder | File |
   }
 }
 
-const openPath = async (ceramic: any, path: string, options?: CreateOptions): Promise<Folder | File | undefined> => {
+const openPath = async (ceramic: any, controller: string, path: string, options?: CreateOptions): Promise<Folder | File | undefined> => {
   // Remove end slash if there is one
   if(path[path.length-1] === '/') path = path.slice(0,path.length-1)
 
-  let stream: TileDocument | false = await exists(ceramic, path)
+  let stream: TileDocument | false = await exists(ceramic, controller, path)
   if(stream) {
     return getF(ceramic, stream)
   }
@@ -265,11 +266,16 @@ const openPath = async (ceramic: any, path: string, options?: CreateOptions): Pr
   }
 }
 
+const viewPath = async (ceramic: string, controller: string, path: string): Promise<Folder | File | undefined> => {
+  const stream: TileDocument | false = await exists(ceramic, controller, path)
+  return
+}
+
 export const FileSystem = (ceramic: any) => {
   
-  const check = async (path: string): Promise<boolean> => {
-    const stream: TileDocument | false = await exists(ceramic, path)
-    return stream !== undefined
+  const check = async (did: string, path: string): Promise<boolean> => {
+    const stream: TileDocument | false = await exists(ceramic, did, path)
+    return stream as boolean
   }
 
   const get = async (streamId: string): Promise<Folder | File | undefined> => {
@@ -277,13 +283,18 @@ export const FileSystem = (ceramic: any) => {
     return getF(ceramic, stream)
   }
 
-  const open = async (path: string, options?: CreateOptions): Promise<Folder | File | undefined> => {
-    return openPath(ceramic, path, options)
+  const open = async (controller: string, path: string, options?: CreateOptions): Promise<Folder | File | undefined> => {
+    return openPath(ceramic, controller, path, options)
+  }
+
+  const view = async (controller: string, path: string): Promise<Folder | File | undefined> => {
+    return viewPath(ceramic, controller, path)
   }
 
   return {
     version,
     check,
+    view,
     get,
     open,
     validPath,

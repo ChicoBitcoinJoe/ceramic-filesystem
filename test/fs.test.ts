@@ -31,16 +31,16 @@ describe("test AppendCollection correctness", () => {
   }
 
   it("create a root filesystem", async () => {
-    let root = await FS.open(rootName) as Folder
+    let root = await FS.open(ceramic.did.id.toString(), rootName) as Folder
     expect(root).toEqual(undefined)    
-    root = await FS.open(rootName, options) as Folder
+    root = await FS.open(ceramic.did.id.toString(), rootName, options) as Folder
     expect(root.name).toEqual(rootName)
   });
 
   it("create a folder in root", async () => {
-    const root = await FS.open(rootName) as Folder
+    const root = await FS.open(ceramic.did.id.toString(), rootName) as Folder
     const folderFromRoot = await root.open(folderName, options) as Folder
-    const folderFromPath = await FS.open(folderPath, options) as Folder
+    const folderFromPath = await FS.open(ceramic.did.id.toString(), folderPath, options) as Folder
     expect(folderFromPath.id).toEqual(folderFromRoot.id)
     expect(folderFromPath.name).toEqual(folderName)
     const rootFolderNames = await root.folders.getFirstN(1)
@@ -48,10 +48,10 @@ describe("test AppendCollection correctness", () => {
   });
   
   it("create a file in a folder", async () => {
-    const root = await FS.open(rootName, options) as Folder
+    const root = await FS.open(ceramic.did.id.toString(), rootName, options) as Folder
     const folder = await root.open(folderName, options) as Folder
     const fileFromRoot = await folder.open(fileName, options) as File
-    const fileFromPath = await FS.open(filePath, options) as File
+    const fileFromPath = await FS.open(ceramic.did.id.toString(), filePath, options) as File
     expect(fileFromRoot.id).toEqual(fileFromPath.id)
     expect('/'+fileFromRoot.name).toEqual(fileName)
     expect(fileFromRoot.name).toEqual(fileFromPath.name)
