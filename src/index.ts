@@ -27,93 +27,6 @@ export interface Folder extends F {
   open(path: string, options?: CreateOptions): Promise<Folder | File | undefined>;
 }
 
-// const getDefaultContent = async (ceramic: any, type: Type) => {
-//   if(type === 'CeramicFolder') {
-//     const collection = await AppendCollection.create(ceramic, { sliceMaxItems: 256 })
-//     const collectionStreamId = collection.id.toString()
-//     return { version, collectionStreamId }
-//   }
-//   else if(type === 'CeramicFile') {
-//     return { version }
-//   }
-//   else {
-//     throw new Error("Default Content type must be 'CeramicFolder' or 'CeramicFile'")
-//   }
-// }
-
-// const getDefaultMetadata = (type: Type, path: string): TileMetadataArgs => {
-//   return {
-//     family: type,
-//     tags: [path],
-//     deterministic: true,
-//   }
-// }
-
-// const getNextNameInPath = (path: string) => {
-//   if(path[0] === '/') path = path.slice(1, path.length)
-//   if(path.slice(0,2) === './') path = path.slice(2, path.length)
-//   if(path.includes('/')) {
-//     const index = path.indexOf('/')
-//     const name = path.slice(0, index)
-//     const extra = path.slice(index, path.length)
-//     return [ name, extra ]
-//   }
-//   else {
-//     return [ path, "" ]
-//   }
-// }
-
-// const create = async (ceramic: any, path: string): Promise<F> => {
-//   const type: Type = path.includes('//') ? 'CeramicFile' : 'CeramicFolder'
-//   let metadata: TileMetadataArgs = getDefaultMetadata(type, path)
-//   let stream: any = await TileDocument.create(ceramic, null, metadata, { anchor: false, publish: false })
-//   stream = await TileDocument.load(ceramic, stream.id.toString())
-//   if(!stream.content.version) {
-//     stream = await TileDocument.create(ceramic, null, metadata, { anchor: true, publish: true })
-//     const content = await getDefaultContent(ceramic, type)
-//     metadata = {
-//       tags: [...metadata.tags as string[], version],
-//     }
-//     await stream.update(content, metadata)
-//   }
-
-//   return getF(ceramic, stream.id.toString())
-// }
-
-
-
-// const getRecursiveF = async (ceramic: any, path: string, parent?: Folder, options?: Options): Promise<F> => {
-//   const [ name, additionalPath ] = getNextNameInPath(path)
-//   if(name.includes('.') && additionalPath !== "") throw new Error("Invalid Path: folder name contains a period")
-  
-//   const parentStreamId: string | undefined = parent?.id.toString()
-//   let f = await getDeterministicF(ceramic, name, parentStreamId)
-//   if(!f && options?.createIfUndefined) {
-//     f = await create(ceramic, name)
-//     if(f && parent) {
-//       await parent.content.insert(name)
-//     }
-//   }
-  
-//   if(!f) return undefined
-
-//   if(additionalPath === "") {
-//     return f
-//   }
-//   else {
-//     return getRecursiveF(ceramic, additionalPath, f as Folder, options)
-//   }
-// }
-
-// const openFilesAndFolders = async (ceramic: any, paths: string[], parent?: Folder, options?: Options): Promise<F[]> => {
-//   const filesAndFolders: Promise<File | Folder | undefined>[] = []
-//   paths.forEach((path) => {
-//     const promise = getRecursiveF(ceramic, path, parent, options)
-//     filesAndFolders.push(promise)
-//   });
-//   return Promise.all(filesAndFolders)
-// }
-
 const getTypeFromPath = (path: string) => { 
   return path.includes('//') ? 'File' : 'Folder'
 }
@@ -260,15 +173,10 @@ const openPath = async (ceramic: any, controller: string, path: string, options?
   if(stream) {
     return getF(ceramic, stream)
   }
-  else if(options?.createIfUndefined) {
+  else if(ceramic?.did?.id.toString() === controller && options?.createIfUndefined) {
     stream = await create(ceramic, path, options)    
     return getF(ceramic, stream)
   }
-}
-
-const viewPath = async (ceramic: string, controller: string, path: string): Promise<Folder | File | undefined> => {
-  const stream: TileDocument | false = await exists(ceramic, controller, path)
-  return
 }
 
 export const FileSystem = (ceramic: any) => {
@@ -287,14 +195,9 @@ export const FileSystem = (ceramic: any) => {
     return openPath(ceramic, controller, path, options)
   }
 
-  const view = async (controller: string, path: string): Promise<Folder | File | undefined> => {
-    return viewPath(ceramic, controller, path)
-  }
-
   return {
     version,
     check,
-    view,
     get,
     open,
     validPath,
