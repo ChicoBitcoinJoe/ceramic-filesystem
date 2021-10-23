@@ -67,16 +67,16 @@ const getMetadata = (controller: string, path: string): TileMetadataArgs => {
   }
 }
 
-const getStreamIdFromPath = async (ceramic: any, did: string, path: string): Promise<string | undefined> => {
+const getStreamIdFromPath = async (ceramic: any, controller: string, path: string): Promise<string | undefined> => {
   if(!validPath(path)) return undefined
 
-  const metadata: TileMetadataArgs = getMetadata(did, path)
+  const metadata: TileMetadataArgs = getMetadata(controller, path)
   let stream: any = await TileDocument.create(ceramic, null, metadata, { anchor: false, publish: false })
   return stream.id.toString()
  }
 
-const exists = async (ceramic:any, did: string, path: string): Promise<TileDocument | false> => {
-  const streamId = await getStreamIdFromPath(ceramic, did, path)
+const exists = async (ceramic:any, controller: string, path: string): Promise<TileDocument | false> => {
+  const streamId = await getStreamIdFromPath(ceramic, controller, path)
   if(!streamId) return false
   
   const stream: TileDocument = await TileDocument.load(ceramic, streamId)
@@ -84,8 +84,7 @@ const exists = async (ceramic:any, did: string, path: string): Promise<TileDocum
   if(!stream.content) return false
   if(Object.keys(stream.content).length === 0) return false
   if(stream.metadata.tags?.length !== 1) return false
-  const fullPath = stream.metadata.tags[0]
-  if(path !== fullPath) return false
+  if(path !== stream.metadata.tags[0]) return false
   return stream
 }
 
@@ -108,7 +107,7 @@ const create = async (ceramic: any, path: string, options: CreateOptions): Promi
       historyCollectionId: historyCollection.id.toString()
     }
   }
-  await stream.update(content, { tags: [path] })
+  await stream.update(content)
 
   if(!options?.hidden) {
     if(parentPath) {
@@ -181,9 +180,9 @@ const openPath = async (ceramic: any, controller: string, path: string, options?
 
 export const FileSystem = (ceramic: any) => {
   
-  const check = async (did: string, path: string): Promise<boolean> => {
-    const stream: TileDocument | false = await exists(ceramic, did, path)
-    return stream as boolean
+  const check = async (controller: string, path: string): Promise<TileDocument | false> => {
+    const stream: TileDocument | false = await exists(ceramic, controller, path)
+    return stream
   }
 
   const get = async (streamId: string): Promise<Folder | File | undefined> => {
