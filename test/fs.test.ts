@@ -34,6 +34,8 @@ describe("test AppendCollection correctness", () => {
     let root = await FS.open(ceramic.did.id.toString(), rootName) as Folder
     expect(root).toEqual(undefined)    
     root = await FS.open(ceramic.did.id.toString(), rootName, options) as Folder
+    const exists = await FS.check(ceramic.did.id.toString(), rootName)
+    expect(exists).toEqual(true)
     expect(root.name).toEqual(rootName)
   });
 
