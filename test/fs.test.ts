@@ -2,12 +2,12 @@ import { randomBytes } from '@stablelib/random'
 import { Ed25519Provider } from 'key-did-provider-ed25519'
 import { DID } from 'dids'
 
-import { FileSystem, CeramicFolder, CeramicFile, CreateOptions } from '../src/index';
+import { CeramicFileSystem, CeramicFolder, CeramicFile, CreateOptions } from '../src/index';
 
 const CeramicClient = require('@ceramicnetwork/http-client').default
 const KeyDidResolver = require('key-did-resolver').default
 const ceramic = new CeramicClient()
-const fs = FileSystem(ceramic)
+const fs = CeramicFileSystem(ceramic)
 
 const oneMinute = 60000
 jest.setTimeout(oneMinute / 2);

@@ -201,7 +201,7 @@ const openPath = async (ceramic: any, path: string, options: CreateOptions): Pro
   }
 }
 
-export const FileSystem = (ceramic: any) => {
+export const CeramicFileSystem = (ceramic: any) => {
   
   const check = async (path: string, options: CreateOptions): Promise<TileDocument | boolean> => {
     const stream: TileDocument | false = await exists(ceramic, path, options)
