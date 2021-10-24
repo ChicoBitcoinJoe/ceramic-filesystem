@@ -9,17 +9,35 @@ require('dotenv').config()
 
 const ceramic = new CeramicClient()
 
-const FolderSchema = {
+const CeramicFolderSchema = {
   $schema: "http://json-schema.org/draft-07/schema#",
-  $comment: "filesystemFolder",
-  title: "Folder",
+  //$comment: "Ceramic Folder",
+  title: "CeramicFolder",
   type: "object",
   properties: {
-    name: { type: "string", minimum: 0, maximum: 256 },
-    folders: { type: "string", minimum: 0, maximum: 150 },
-    files: { type: "string", minimum: 0, maximum: 150 },
+    folderCollectionId: { 
+      type: "string", 
+      minimum: 0, 
+      maximum: 150,
+    },
+    fileCollectionId: { 
+      type: "string", 
+      minimum: 0, 
+      maximum: 150,
+    },
   },
-  required: ["name", "folders", "files"]
+  required: ["folderCollectionId", "fileCollectionId"]
+}
+
+const CeramicFileSchema = {
+  $schema: "http://json-schema.org/draft-07/schema#",
+  //$comment: "Ceramic File",
+  title: "CeramicFile",
+  type: "object",
+  properties: {
+    historyCollectionId: { type: "string", minimum: 0, maximum: 150 },
+  },
+  required: ["historyCollectionId"]
 }
 
 async function bootstrap() {
@@ -31,7 +49,8 @@ async function bootstrap() {
   await ceramic.did.authenticate()
 
   const manager = new ModelManager(ceramic)
-  await manager.createSchema('Folder', FolderSchema)
+  await manager.createSchema('CeramicFolder', CeramicFolderSchema)
+  await manager.createSchema('CeramicFile', CeramicFileSchema)
 
   // Publish model to Ceramic node
   const model = await manager.toPublished()
